@@ -24,7 +24,8 @@ sudo mv /usr/lib/libfprint-2.so.2.0.0 /usr/lib/libfprint-2.so.2.0.0.bak
 echo "Original libfprint-2.so.2.0.0 backed up to libfprint-2.so.2.0.0.bak"
 
 # Fix link
-sudo ln -sf /usr/lib/libfprint-2.so.2.0.0 /usr/lib/libfprint-2.so
+sudo ln -sf /usr/lib/libfprint-2.so.2 /usr/lib/libfprint-2.so
+sudo ln -sf /usr/lib/libfprint-2.so.2.0.0 /usr/lib/libfprint-2.so.2
 
 # Copy FPC fprint, helper libraries
 sudo cp ./FPC_driver_linux_libfprint/install_libfprint/usr/lib/x86_64-linux-gnu/libfprint-2.so.2.0.0 /usr/lib/
