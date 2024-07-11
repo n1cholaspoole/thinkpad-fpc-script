@@ -1,49 +1,37 @@
 #!/bin/bash
 
-echo "Downloading files"
+echo "Installing Thinkpad E14/E15 Gen 4 FPC driver...\n"
 
-# Create random temp directory
-TEMP_DIR="tmp$RANDOM"
-mkdir $TEMP_DIR
-cd ./$TEMP_DIR
+if ! [ -e ./r1slm02w.zip ]
+then
+  curl https://download.lenovo.com/pccbbs/mobiles/r1slm02w.zip --compressed --output ./r1slm02w.zip
 
-# Download the driver
-curl https://download.lenovo.com/pccbbs/mobiles/r1slm02w.zip --compressed --output ./r1slm02w.zip
-unzip r1slm02w.zip
+fi
 
-echo "Installing Thinkpad E15 Gen 4 FPC driver"
+if [ -e ./r1slm02w.zip ]
+then
+  unzip ./r1slm02w.zip
 
-# Install fprintd, libfprint
-sudo pacman -S fprintd libfprint --noconfirm
+  sudo pacman -Sy fprintd --noconfirm
 
-# Copy udev rules
-sudo cp -r ./FPC_driver_linux_libfprint/install_libfprint/lib/* /lib/
+  sudo sed -i '/\[options\]/a IgnorePkg = fprintd libfprint' /etc/pacman.conf
 
-# Backup existing fprint library
-sudo mv /usr/lib/libfprint-2.so.2.0.0 /usr/lib/libfprint-2.so.2.0.0.bak
-echo "Original libfprint-2.so.2.0.0 backed up to libfprint-2.so.2.0.0.bak"
+  sudo cp -r ./FPC_driver_linux_libfprint/install_libfprint/lib/* /lib/
 
-# Fix link
-sudo ln -sf /usr/lib/libfprint-2.so.2 /usr/lib/libfprint-2.so
-sudo ln -sf /usr/lib/libfprint-2.so.2.0.0 /usr/lib/libfprint-2.so.2
+  sudo rm /usr/lib/libfprint-2.so.2.0.0
 
-# Copy FPC fprint, helper libraries
-sudo cp ./FPC_driver_linux_libfprint/install_libfprint/usr/lib/x86_64-linux-gnu/libfprint-2.so.2.0.0 /usr/lib/
-sudo cp ./FPC_driver_linux_27.26.23.39/install_fpc/libfpcbep.so /usr/lib
+  sudo cp ./FPC_driver_linux_libfprint/install_libfprint/usr/lib/x86_64-linux-gnu/libfprint-2.so.2.0.0 /usr/lib/
+  sudo cp ./FPC_driver_linux_27.26.23.39/install_fpc/libfpcbep.so /usr/lib/
 
-# Make directory for logs
-sudo mkdir -p /var/log/fpc
+  sudo mkdir -p /var/log/fpc
 
-# Fix permissions
-sudo chmod 755 /usr/lib/libfprint-2.so.2.0.0 /usr/lib/libfpcbep.so
+  sudo chmod 755 /usr/lib/libfprint-2.so.2.0.0 /usr/lib/libfpcbep.so
 
-# Restart fprintd
-sudo systemctl restart fprintd
+  sudo systemctl restart fprintd
+  
+  echo "Installation completed."
 
-echo "Removing temp files"
+else
+  echo "Driver file was not found or not downloaded!"
 
-# Remove temp directory
-cd ../
-sudo rm -rf ./$TEMP_DIR
-
-echo "Installation completed successfully"
+fi
